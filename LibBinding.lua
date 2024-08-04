@@ -8,8 +8,9 @@ Please note bindType=2
 assert(LibStub, "LibStub not found.");
 local major, minor = "LibBinding", 1;
 
---- @class LibBinding
+---@class LibBinding
 ---@field ItemBinding BindingType 
+---@field BindingString BindingString
 local lib = LibStub:NewLibrary(major, minor);
 
 if not lib then return end;
