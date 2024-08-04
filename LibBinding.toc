@@ -1,0 +1,18 @@
+## Interface: 110000, 110002
+## Title: LibBinding
+## Notes: Functions for determining item bindings
+## Author: Zeptognome
+## Version: @project-version@
+## X-Date: @project-date-iso@
+## IconTexture: Interface\Icons\inv_misc_gear_01
+## X-Website: https://github.com/zeptognome/LibBinding
+
+## DefaultState: Enabled
+
+## X-Category: Library
+## X-License: MIT
+## X-Curse-Project-ID: 1077120
+## X-Wago-ID: b6mbR7KP
+
+LibStub.lua
+LibBinding.lua

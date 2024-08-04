@@ -1,0 +1,10 @@
+package-as: LibBinding
+
+ignore:
+  - annotations.lua
+  - README.md
+  - .github
+  - .packager
+  - .release
+  - .badges
+  - .vscode
