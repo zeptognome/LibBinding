@@ -2,7 +2,6 @@
 LibBinding
 Copyright (c) 2024 zeptognome
 Functions to determine current binding or items 
-Please note bindType=2
 ]]--
 
 assert(LibStub, "LibStub not found.");
@@ -13,76 +12,109 @@ local LibBinding = LibStub:NewLibrary(major, minor);
 
 if not LibBinding then return end;
 
----@enum BindingType
+---@enum BindingType -- note these are similar, but NOT the same as Enum.ItemBind
 LibBinding.BindingType = {
   NONE = 0,
-  ACCOUNT = 1,
-  SOULBOUND = 2,
-  QUEST = 3,
-  BOE = 4,
-  BOU = 5,
-  WUE = 6,
-  NOBANK= 98,
-  UNKNOWN = 99
+  SOULBOUND = 1,
+  BOE = 2,
+  BOU = 3,
+  QUEST = 4,
+  NOBANK = 5,
+  UNKNOWN = 6,
+  ACCOUNT = 7,
+  BNET = 8,
+  WUE = 9,
 }
 
 ---@enum BindingString
 LibBinding.BindingString = {
  [LibBinding.BindingType.NONE] = "None",
- [LibBinding.BindingType.ACCOUNT] = "Warbound",
  [LibBinding.BindingType.SOULBOUND] = "Soulbound",
- [LibBinding.BindingType.QUEST] = "Quest",
  [LibBinding.BindingType.BOE] = "BoE",
  [LibBinding.BindingType.BOU] = "BoU",
- [LibBinding.BindingType.WUE] = "WuE",
+ [LibBinding.BindingType.QUEST] = "Quest",
  [LibBinding.BindingType.NOBANK] = "NoBank",
  [LibBinding.BindingType.UNKNOWN] = "Unknown",
+ [LibBinding.BindingType.ACCOUNT] = "Warbound",
+ [LibBinding.BindingType.BNET] = "BNet",
+ [LibBinding.BindingType.WUE] = "WuE",
 }
+
+---@enum GlobalString
+LibBinding.GlobalString = {
+  [LibBinding.BindingType.NONE] = "",
+  [LibBinding.BindingType.SOULBOUND] = ITEM_SOULBOUND,
+  [LibBinding.BindingType.BOE] = ITEM_BIND_ON_EQUIP,
+  [LibBinding.BindingType.BOU] = ITEM_BIND_ON_USE,
+  [LibBinding.BindingType.QUEST] = ITEM_BIND_QUEST,
+  [LibBinding.BindingType.NOBANK] = ERROR_CAPS,
+  [LibBinding.BindingType.UNKNOWN] = ERROR_CAPS,
+  [LibBinding.BindingType.ACCOUNT] = ITEM_ACCOUNTBOUND,
+  [LibBinding.BindingType.BNET] = ITEM_BNETACCOUNTBOUND,
+  [LibBinding.BindingType.WUE] = ITEM_ACCOUNTBOUND_UNTIL_EQUIP,
+}
+
+---@func LibBinding.FetchBindType(itemLocation)
+---@param itemLocation ItemLocationMixin
+---@return Enum.ItemBind
+function LibBinding.FetchBindType(itemLocation)
+  local bindType
+  local item = Item:CreateFromItemLocation(itemLocation)
+  local itemCallback = function()
+    bindType,_,_,_ = select(14, C_Item.GetItemInfo(item:GetItemID()))
+  end
+  item:ContinueOnItemLoad(itemCallback)
+  return bindType
+end
 
 ---@func LibBinding.isNonBinding(itemLocation)
 ---@param itemLocation ItemLocationMixin
+---@param bindType? Enum.ItemBind
 ---@return boolean
-function LibBinding.isNonbinding(itemLocation)
-  local bindType,_,_,_ = select(14,C_Item.GetItemInfo(C_Item.GetItemID(itemLocation)))
-  return (bindType == 0)
+function LibBinding.isNonbinding(itemLocation, bindType)
+  local type = bindType or LibBinding.FetchBindType(itemLocation)
+  return (type == 0)
 end
 
 ---@func LibBinding.isBound(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
-function LibBinding.isBound(itemLocation)
+function LibBinding.isUntradable(itemLocation)
   return C_Item.IsBound(itemLocation) or C_Item.IsBoundToAccountUntilEquip(itemLocation)
 end
 
 ---@func LibBinding.isUnbound(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
-function LibBinding.isUnbound(itemLocation)
+function LibBinding.isTradeable(itemLocation)
   return not C_Item.IsBound(itemLocation) and not C_Item.IsBoundToAccountUntilEquip(itemLocation)
 end
 
 ---@func LibBinding.Questbound(itemLocation)
 ---@param itemLocation ItemLocationMixin
+---@param bindType? Enum.ItemBind
 ---@return boolean
-function LibBinding.isQuestbound(itemLocation)
-  local bindType,_,_,_ = select(14,C_Item.GetItemInfo(C_Item.GetItemID(itemLocation)))
-  return (bindType == 4)
+function LibBinding.isQuestbound(itemLocation,bindType)
+  local type = bindType or LibBinding.FetchBindType(itemLocation)
+  return (type == 4)
 end
 
 ---@func LibBinding.isBindOnEquip(itemLocation)
 ---@param itemLocation ItemLocationMixin
+---@param bindType? Enum.ItemBind
 ---@return boolean
-function LibBinding.isBindOnEquip(itemLocation)
-  local bindType,_,_,_ = select(14,C_Item.GetItemInfo(C_Item.GetItemID(itemLocation)))
-  return not LibBinding.isBound(itemLocation) and (bindType == 2)
+function LibBinding.isBindOnEquip(itemLocation,bindType)
+  local type = bindType or LibBinding.FetchBindType(itemLocation)
+  return (type == 2) and LibBinding.isTradeable(itemLocation)
 end
 
 ---@func LibBinding.isBindOnUse(itemLocation)
 ---@param itemLocation ItemLocationMixin
+---@param bindType? Enum.ItemBind
 ---@return boolean
-function LibBinding.isBindOnUse(itemLocation)
-  local bindType,_,_,_ = select(14,C_Item.GetItemInfo(C_Item.GetItemID(itemLocation)))
-  return not LibBinding.isBound(itemLocation) and (bindType == 3)
+function LibBinding.isBindOnUse(itemLocation, bindType)
+  local type = bindType or LibBinding.FetchBindType(itemLocation)
+  return (type == 3) and LibBinding.isTradeable(itemLocation)
 end
 
 ---@func LibBinding.isSoulbound(itemLocation)
@@ -103,30 +135,30 @@ end
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
 function LibBinding.isWarboundUntilEquipped(itemLocation)
-  return not C_Item.IsBound(itemLocation) and C_Item.IsBoundToAccountUntilEquip(itemLocation)
+  return C_Item.IsBoundToAccountUntilEquip(itemLocation) and not C_Item.IsBound(itemLocation)
 end
 
 ---@func LibBinding.GetItemBinding(itemLocation)
 ---@param itemLocation ItemLocationMixin
+---@param bindType? Enum.ItemBind
 ---@return BindingType
-function LibBinding.GetItemBinding(itemLocation)
-  assert (C_Item.IsItemDataCached(itemLocation), "LibBinding request on unloaded item")
+function LibBinding.GetItemBinding(itemLocation, bindType)
+  local type = bindType or LibBinding.FetchBindType(itemLocation)
 
-  local bindType,_,_,_ = select(14,C_Item.GetItemInfo(C_Item.GetItemID(itemLocation)))
-  if bindType == 0 then
+  if type == 0 then
     return LibBinding.BindingType.NONE
   end
 
-  if bindType == 4 then
+  if type == 4 then
     return LibBinding.BindingType.QUEST
   end
 
   local isbound = C_Item.IsBound(itemLocation)
   local warbank = C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation)
 
-  if isbound and warbank then
+  if LibBinding.isWarbound(itemLocation) then
     return LibBinding.BindingType.ACCOUNT
-  elseif isbound and not warbank then
+  elseif LibBinding.isSoulbound(itemLocation) then
     return LibBinding.BindingType.SOULBOUND
   end
 
@@ -138,11 +170,11 @@ function LibBinding.GetItemBinding(itemLocation)
     return LibBinding.BindingType.WUE
   end
 
-  if bindType == 2 then
+  if type == 2 then
     return LibBinding.BindingType.BOE
   end
 
-  if bindType == 3 then
+  if type == 3 then
     return LibBinding.BindingType.BOU
   end
 
