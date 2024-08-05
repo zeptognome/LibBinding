@@ -161,9 +161,9 @@ function LibBinding.GetItemBinding(itemLocation, bindType)
     synthetictype = 9   -- override Warbound BoEs from type BoE(2) to type WuE(9)
   end
 
-  if not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation) then
+  if LibBinding.isTradeable (itemLocation) and not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation) then
     synthetictype = 5  -- this shouldn't happen, something has changed as of 11.0, only quest(4) and soulbound(1) items are blocked from account bank
   end
 
-  return LibBinding.BindingType[synthetictype] -- types None(0), BoE(2), BoU(3) plus any types we don't see such as unused(6) or BNet(8)
+  return synthetictype -- types None(0), BoE(2), BoU(3) plus any types we don't see such as unused(6) or BNet(8)
 end
