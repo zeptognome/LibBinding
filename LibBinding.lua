@@ -76,13 +76,13 @@ end
 
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
-function LibBinding.isUntradable(itemLocation)
+function LibBinding.isNontradable(itemLocation)
   return C_Item.IsBound(itemLocation) or C_Item.IsBoundToAccountUntilEquip(itemLocation)
 end
 
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
-function LibBinding.isTradeable(itemLocation)
+function LibBinding.isTradable(itemLocation)
   return not C_Item.IsBound(itemLocation) and not C_Item.IsBoundToAccountUntilEquip(itemLocation)
 end
 
@@ -99,7 +99,7 @@ end
 ---@return boolean
 function LibBinding.isBindOnEquip(itemLocation,bindType)
   local type = bindType or LibBinding.FetchBindType(itemLocation)
-  return (type == 2) and LibBinding.isTradeable(itemLocation)
+  return (type == 2) and LibBinding.isTradable(itemLocation)
 end
 
 ---@param itemLocation ItemLocationMixin
@@ -107,7 +107,7 @@ end
 ---@return boolean
 function LibBinding.isBindOnUse(itemLocation, bindType)
   local type = bindType or LibBinding.FetchBindType(itemLocation)
-  return (type == 3) and LibBinding.isTradeable(itemLocation)
+  return (type == 3) and LibBinding.isTradable(itemLocation)
 end
 
 ---@param itemLocation ItemLocationMixin
@@ -161,7 +161,7 @@ function LibBinding.GetItemBinding(itemLocation, bindType)
     synthetictype = 9   -- override Warbound BoEs from type BoE(2) to type WuE(9)
   end
 
-  if LibBinding.isTradeable (itemLocation) and not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation) then
+  if LibBinding.isTradable (itemLocation) and not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation) then
     synthetictype = 5  -- this shouldn't happen, something has changed as of 11.0, only quest(4) and soulbound(1) items are blocked from account bank
   end
 
