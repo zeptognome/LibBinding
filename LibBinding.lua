@@ -54,7 +54,6 @@ LibBinding.GlobalString = {
   [LibBinding.BindingType.WUE] = ITEM_ACCOUNTBOUND_UNTIL_EQUIP,
 }
 
----@func LibBinding.FetchBindType(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@return Enum.ItemBind
 function LibBinding.FetchBindType(itemLocation)
@@ -67,7 +66,6 @@ function LibBinding.FetchBindType(itemLocation)
   return bindType
 end
 
----@func LibBinding.isNonBinding(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@param bindType? Enum.ItemBind
 ---@return boolean
@@ -76,21 +74,18 @@ function LibBinding.isNonbinding(itemLocation, bindType)
   return (type == 0)
 end
 
----@func LibBinding.isBound(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
 function LibBinding.isUntradable(itemLocation)
   return C_Item.IsBound(itemLocation) or C_Item.IsBoundToAccountUntilEquip(itemLocation)
 end
 
----@func LibBinding.isUnbound(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
 function LibBinding.isTradeable(itemLocation)
   return not C_Item.IsBound(itemLocation) and not C_Item.IsBoundToAccountUntilEquip(itemLocation)
 end
 
----@func LibBinding.Questbound(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@param bindType? Enum.ItemBind
 ---@return boolean
@@ -99,7 +94,6 @@ function LibBinding.isQuestbound(itemLocation,bindType)
   return (type == 4)
 end
 
----@func LibBinding.isBindOnEquip(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@param bindType? Enum.ItemBind
 ---@return boolean
@@ -108,7 +102,6 @@ function LibBinding.isBindOnEquip(itemLocation,bindType)
   return (type == 2) and LibBinding.isTradeable(itemLocation)
 end
 
----@func LibBinding.isBindOnUse(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@param bindType? Enum.ItemBind
 ---@return boolean
@@ -117,28 +110,24 @@ function LibBinding.isBindOnUse(itemLocation, bindType)
   return (type == 3) and LibBinding.isTradeable(itemLocation)
 end
 
----@func LibBinding.isSoulbound(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
 function LibBinding.isSoulbound(itemLocation)
   return C_Item.IsBound(itemLocation) and not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation)
 end
 
----@func LibBinding.isWarbound(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
 function LibBinding.isWarbound(itemLocation)
   return C_Item.IsBound(itemLocation) and C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation)
 end
 
----@func LibBinding.isWarboundUntilEquipped(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@return boolean
 function LibBinding.isWarboundUntilEquipped(itemLocation)
   return C_Item.IsBoundToAccountUntilEquip(itemLocation) and not C_Item.IsBound(itemLocation)
 end
 
----@func LibBinding.GetItemBinding(itemLocation)
 ---@param itemLocation ItemLocationMixin
 ---@param bindType? Enum.ItemBind
 ---@return BindingType
