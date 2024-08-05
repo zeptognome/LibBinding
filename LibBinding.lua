@@ -1,7 +1,7 @@
 --[[ 
 LibBinding
 Copyright (c) 2024 zeptognome
-Functions to determine current binding or items 
+Functions to determine current binding of items 
 ]]--
 
 assert(LibStub, "LibStub not found.");
@@ -150,7 +150,7 @@ end
 ---@param bindType? Enum.ItemBind
 ---@return BindingType
 function LibBinding.GetItemBinding(itemLocation, bindType)
-  -- assume synthetictype passed correctly or default to GetItemInfo
+  -- assume synthetictype passed correctly or default to a GetItemInfo lookup
   local synthetictype = bindType or LibBinding.FetchBindType(itemLocation) --[[@as BindingType]]
 
   if C_Item.IsBound(itemLocation) then  -- Types Soulbound(1), Quest(4), and Accountbound(7) should match
@@ -162,7 +162,7 @@ function LibBinding.GetItemBinding(itemLocation, bindType)
   end
 
   if not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation) then
-    type = 5  -- this shouldn't happen, something has changed as of 11.0, only quest(4) and soulbound(1) items are blocked from account bank
+    synthetictype = 5  -- this shouldn't happen, something has changed as of 11.0, only quest(4) and soulbound(1) items are blocked from account bank
   end
 
   return LibBinding.BindingType[synthetictype] -- types None(0), BoE(2), BoU(3) plus any types we don't see such as unused(6) or BNet(8)
