@@ -111,9 +111,13 @@ function LibBinding.isBindOnUse(itemLocation, bindType)
 end
 
 ---@param itemLocation ItemLocationMixin
+---@param bindType? Enum.ItemBind
 ---@return boolean
-function LibBinding.isSoulbound(itemLocation)
-  return C_Item.IsBound(itemLocation) and not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation)
+function LibBinding.isSoulbound(itemLocation, bindType)
+  local type = bindType or LibBinding.FetchBindType(itemLocation)
+  return C_Item.IsBound(itemLocation)
+    and not LibBinding.isQuestbound(itemLocation,type)
+    and not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation)
 end
 
 ---@param itemLocation ItemLocationMixin
@@ -131,41 +135,35 @@ end
 ---@param itemLocation ItemLocationMixin
 ---@param bindType? Enum.ItemBind
 ---@return BindingType
+function LibBinding.ParseBoundTypes(itemLocation, bindType)
+  local type = 1  -- Assume Soulbound
+  if C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation) then
+    type = 7  -- Assign AccountBound
+  end
+  if bindType == 4 then
+    type = 4   -- Quest type overrides all other bindings
+  end
+  return type
+end
+
+---@param itemLocation ItemLocationMixin
+---@param bindType? Enum.ItemBind
+---@return BindingType
 function LibBinding.GetItemBinding(itemLocation, bindType)
-  local type = bindType or LibBinding.FetchBindType(itemLocation)
+  -- assume synthetictype passed correctly or default to GetItemInfo
+  local synthetictype = bindType or LibBinding.FetchBindType(itemLocation) --[[@as BindingType]]
 
-  if type == 0 then
-    return LibBinding.BindingType.NONE
-  end
-
-  if type == 4 then
-    return LibBinding.BindingType.QUEST
-  end
-
-  local isbound = C_Item.IsBound(itemLocation)
-  local warbank = C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation)
-
-  if LibBinding.isWarbound(itemLocation) then
-    return LibBinding.BindingType.ACCOUNT
-  elseif LibBinding.isSoulbound(itemLocation) then
-    return LibBinding.BindingType.SOULBOUND
-  end
-
-  if not isbound and not warbank then
-    return LibBinding.BindingType.NOBANK
+  if C_Item.IsBound(itemLocation) then  -- Types Soulbound(1), Quest(4), and Accountbound(7) should match
+    synthetictype = LibBinding.ParseBoundTypes(itemLocation, synthetictype)
   end
 
   if C_Item.IsBoundToAccountUntilEquip(itemLocation) then
-    return LibBinding.BindingType.WUE
+    synthetictype = 9   -- override Warbound BoEs from type BoE(2) to type WuE(9)
   end
 
-  if type == 2 then
-    return LibBinding.BindingType.BOE
+  if not C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation) then
+    type = 5  -- this shouldn't happen, something has changed as of 11.0, only quest(4) and soulbound(1) items are blocked from account bank
   end
 
-  if type == 3 then
-    return LibBinding.BindingType.BOU
-  end
-
- return LibBinding.BindingType.UNKNOWN
+  return LibBinding.BindingType[synthetictype] -- types None(0), BoE(2), BoU(3) plus any types we don't see such as unused(6) or BNet(8)
 end
