@@ -1,4 +1,4 @@
-## Interface: 110000, 110002
+## Interface: 11503, 40400, 110000, 110002
 ## Title: LibBinding
 ## Notes: Functions for determining item bindings
 ## Author: Zeptognome
